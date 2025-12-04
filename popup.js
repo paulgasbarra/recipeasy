@@ -54,7 +54,7 @@ async function init() {
     ingredientsList.innerHTML = "";
     ingredients.forEach((item) => {
       const li = document.createElement("li");
-      li.textContent = item;
+      li.textContent = roundDecimalsInText(item);
       ingredientsList.appendChild(li);
     });
 
@@ -75,6 +75,18 @@ async function init() {
     console.error(err);
     statusEl.textContent = "Error reading recipe from this page.";
   }
+}
+
+/**
+ * Rounds long decimals in text to the nearest hundredth (2 decimal places).
+ * E.g., "1.333333 cups" becomes "1.33 cups"
+ */
+function roundDecimalsInText(text) {
+  // Match decimal numbers with more than 2 decimal places
+  return text.replace(/\b(\d+\.\d{3,})\b/g, (match) => {
+    const num = parseFloat(match);
+    return num.toFixed(2);
+  });
 }
 
 /**
