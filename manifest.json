@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Recipeasy",
+  "description": "A browser extension that cuts through the crud and gives you the recipe you seek.",
+  "version": "0.0.1",
+  "action": {
+    "default_title": "Recipeasy",
+    "default_popup": "popup.html"
+  },
+  "permissions": ["activeTab", "scripting", "storage"],
+  "icons": {
+    "16": "icons/favicon-16x16.png",
+    "48": "icons/favicon-32x32.png",
+    "128": "icons/favicon-192x192.png"
+  }
+}
