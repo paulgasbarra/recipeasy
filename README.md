@@ -66,12 +66,22 @@ Allows printing via a custom print template
 It does not scrape HTML or bypass paywalls.
 It only reads structured metadata explicitly exposed by the website.
 
+Sites it works on:
+
+- [Babish Culinary Universe](https://www.babi.sh/)
+- [Allrecipes](https://www.allrecipes.com/)
+- [Food Network](https://www.foodnetwork.com/)
+- [Serious Eats](https://www.seriouseats.com/)
+- [Epicurious](https://www.epicurious.com/)
+- [NYT Cooking](https://cooking.nytimes.com/)
+- [America's Test Kitchen](https://www.americastestkitchen.com/)
+- and many more.
+
 ---
 
 🔒 Disclaimer
 
-This project is not affiliated with or endorsed by any recipe website,
-including The New York Times or NYT Cooking.
+This project is not affiliated with or endorsed by any recipe website including any of the ones listed above.
 
 Recipe Decoder:
 
