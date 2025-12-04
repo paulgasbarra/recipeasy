@@ -45,7 +45,7 @@ Navigate to a recipe site, click the icon, and voilà — clean recipe view.
 
 ## 🧠 How It Works
 
-Recipe Decoder looks for:
+Recipeasy looks for:
 
 ```html
 <script type="application/ld+json">
@@ -72,6 +72,7 @@ Sites it works on:
 - [Allrecipes](https://www.allrecipes.com/)
 - [Food Network](https://www.foodnetwork.com/)
 - [Serious Eats](https://www.seriouseats.com/)
+- [Simply Recipes](https://www.simplyrecipes.com/)
 - [Epicurious](https://www.epicurious.com/)
 - [NYT Cooking](https://cooking.nytimes.com/)
 - [America's Test Kitchen](https://www.americastestkitchen.com/)
@@ -83,13 +84,15 @@ Sites it works on:
 
 This project is not affiliated with or endorsed by any recipe website including any of the ones listed above.
 
-Recipe Decoder:
+Recipeasy:
 
 Does not store or redistribute copyrighted recipe content
 
 Does not circumvent paywalls
 
 Only displays structured metadata that websites voluntarily publish for SEO
+
+Users are responsible for complying with the content policies of each site.
 
 All recipe copyrights belong to their respective owners.
 
@@ -105,14 +108,10 @@ So many recipe sites publish beautifully structured JSON-LD behind the scenes th
 
 🌟 Future Ideas (PRs welcome!)
 
-Save recipes to chrome.storage.sync
-
-Export to Markdown / PDF
-
 Ingredient normalization & scaling (2x, ½x)
 
 Grocery list generation
 
-Dark mode print layout
+Dark mode
 
 AI-assisted recipe summaries or substitutions
