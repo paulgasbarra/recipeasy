@@ -5,6 +5,10 @@ Recipeasy is a lightweight Chrome extension that extracts **publicly available J
 Many recipe sites bury structured data behind extended text, layers of pop-ups, ads, and scripts.  
 This extension simply surfaces the recipe metadata already published for SEO, giving users a clear view of what they’re cooking — no scraping, no paywall bypassing, no content redistribution.
 
+
+https://github.com/user-attachments/assets/e3b22c18-0018-464c-8ccf-121ee41ebfe6
+
+
 ---
 
 ## ✨ Features
