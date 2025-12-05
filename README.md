@@ -23,11 +23,14 @@ https://github.com/user-attachments/assets/e3b22c18-0018-464c-8ccf-121ee41ebfe6
   - Ingredient list
   - Step-by-step instructions
 
+- 🇺🇸/🇬🇧 **Converts from US to Metric**\
+  One click turns cups to grams for precision cooking.
+
 - 🖨 **One-click Print Mode**  
   Opens a clean, typography-friendly print layout with the recipe nicely formatted.
 
 - 📜 **Sticky header + scrollbar**  
-  The recipe title and print button stay visible while scrolling.
+  The recipe title, conversion button, and print button stay visible while scrolling.
 
 - 💻 **All processing happens locally**  
   No servers, no analytics, no data collection.
