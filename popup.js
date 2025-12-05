@@ -87,7 +87,6 @@ async function init() {
       toggleUnitSystem(ingredientsList, convertButton);
     });
   } catch (err) {
-    console.error(err);
     statusEl.textContent = "Error reading recipe from this page.";
   }
 }
@@ -338,8 +337,8 @@ function openPrintWindow({ name, ingredients, instructions, imageUrl }) {
   if (!printWindow) return;
 
   const title = name || "Recipe";
-
   const doc = printWindow.document;
+
   doc.open();
   doc.write(`
     <!doctype html>
@@ -386,15 +385,17 @@ function openPrintWindow({ name, ingredients, instructions, imageUrl }) {
         <ol>
           ${instructions.map((s) => `<li>${escapeHtml(s)}</li>`).join("")}
         </ol>
-        <script>
-          window.onload = function () {
-            window.print();
-          };
-        </script>
       </body>
     </html>
   `);
   doc.close();
+
+  // Give the new window a moment to render, then print.
+  // (You can tweak the timeout if needed.)
+  printWindow.focus();
+  setTimeout(() => {
+    printWindow.print();
+  }, 100);
 }
 
 /**
