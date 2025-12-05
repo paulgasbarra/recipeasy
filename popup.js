@@ -2,6 +2,10 @@ document.addEventListener("DOMContentLoaded", () => {
   init();
 });
 
+// Global state
+let originalIngredients = [];
+let currentUnitSystem = "US"; // "US" or "Metric"
+
 async function init() {
   const statusEl = document.getElementById("status");
   const titleEl = document.getElementById("recipeTitle");
@@ -9,6 +13,7 @@ async function init() {
   const instructionsList = document.getElementById("instructionsList");
   const imageEl = document.getElementById("recipeImage");
   const printButton = document.getElementById("printButton");
+  const convertButton = document.getElementById("convertMeasurements");
 
   try {
     const [tab] = await chrome.tabs.query({
@@ -36,6 +41,10 @@ async function init() {
 
     const { name, ingredients, instructions, imageUrl } = data;
 
+    // Store original ingredients
+    originalIngredients = [...ingredients];
+    currentUnitSystem = "US";
+
     // Render title
     statusEl.textContent = "";
     if (name) {
@@ -51,12 +60,7 @@ async function init() {
     }
 
     // Render ingredients
-    ingredientsList.innerHTML = "";
-    ingredients.forEach((item) => {
-      const li = document.createElement("li");
-      li.textContent = roundDecimalsInText(item);
-      ingredientsList.appendChild(li);
-    });
+    renderIngredients(ingredientsList, ingredients);
 
     // Render instructions
     instructionsList.innerHTML = "";
@@ -69,7 +73,18 @@ async function init() {
     // Enable print button
     printButton.disabled = false;
     printButton.addEventListener("click", () => {
-      openPrintWindow({ name, ingredients, instructions, imageUrl });
+      openPrintWindow({
+        name,
+        ingredients: getCurrentIngredients(),
+        instructions,
+        imageUrl,
+      });
+    });
+
+    // Enable convert button
+    convertButton.disabled = false;
+    convertButton.addEventListener("click", () => {
+      toggleUnitSystem(ingredientsList, convertButton);
     });
   } catch (err) {
     console.error(err);
@@ -87,6 +102,146 @@ function roundDecimalsInText(text) {
     const num = parseFloat(match);
     return num.toFixed(2);
   });
+}
+
+/**
+ * Renders the ingredients list
+ */
+function renderIngredients(ingredientsList, ingredients) {
+  ingredientsList.innerHTML = "";
+  ingredients.forEach((item) => {
+    const li = document.createElement("li");
+    li.textContent = roundDecimalsInText(item);
+    ingredientsList.appendChild(li);
+  });
+}
+
+/**
+ * Gets the current ingredients (converted if needed)
+ */
+function getCurrentIngredients() {
+  if (currentUnitSystem === "US") {
+    return originalIngredients;
+  } else {
+    return originalIngredients.map((ingredient) => convertToMetric(ingredient));
+  }
+}
+
+/**
+ * Toggles between US and Metric units
+ */
+function toggleUnitSystem(ingredientsList, convertButton) {
+  if (currentUnitSystem === "US") {
+    // Convert to Metric
+    currentUnitSystem = "Metric";
+    const convertedIngredients = originalIngredients.map((ingredient) =>
+      convertToMetric(ingredient)
+    );
+    renderIngredients(ingredientsList, convertedIngredients);
+    convertButton.textContent = "Convert to US";
+    convertButton.title = "Convert to US";
+  } else {
+    // Convert back to US
+    currentUnitSystem = "US";
+    renderIngredients(ingredientsList, originalIngredients);
+    convertButton.textContent = "Convert to Metric";
+    convertButton.title = "Convert to Metric";
+  }
+}
+
+/**
+ * Parses a number that might be a fraction, decimal, or mixed number
+ * Examples: "1/2" -> 0.5, "1 1/2" -> 1.5, "2.5" -> 2.5, "3" -> 3
+ */
+function parseAmount(amountStr) {
+  // Trim whitespace
+  amountStr = amountStr.trim();
+
+  // Check for mixed number (e.g., "1 1/2")
+  const mixedMatch = amountStr.match(/^(\d+)\s+(\d+)\/(\d+)$/);
+  if (mixedMatch) {
+    const whole = parseFloat(mixedMatch[1]);
+    const numerator = parseFloat(mixedMatch[2]);
+    const denominator = parseFloat(mixedMatch[3]);
+    return whole + numerator / denominator;
+  }
+
+  // Check for fraction (e.g., "1/2")
+  const fractionMatch = amountStr.match(/^(\d+)\/(\d+)$/);
+  if (fractionMatch) {
+    const numerator = parseFloat(fractionMatch[1]);
+    const denominator = parseFloat(fractionMatch[2]);
+    return numerator / denominator;
+  }
+
+  // Otherwise parse as decimal
+  return parseFloat(amountStr);
+}
+
+/**
+ * Converts US units to Metric in ingredient text
+ */
+function convertToMetric(ingredient) {
+  let converted = ingredient;
+
+  // Conversion patterns (case-insensitive)
+  // Updated to capture fractions, mixed numbers, and decimals
+  const conversions = [
+    // Cups to ml (1 cup = 240ml)
+    {
+      pattern: /(\d+(?:\s+\d+\/\d+|\.\d+)?|\d+\/\d+)\s*cups?/gi,
+      convert: (amt) => `${Math.round(amt * 240)} ml`,
+    },
+
+    // Tablespoons to ml (1 tbsp = 15ml)
+    {
+      pattern:
+        /(\d+(?:\s+\d+\/\d+|\.\d+)?|\d+\/\d+)\s*(?:tablespoons?|tbsp?s?|T)\b/gi,
+      convert: (amt) => `${Math.round(amt * 15)} ml`,
+    },
+
+    // Teaspoons to ml (1 tsp = 5ml)
+    {
+      pattern:
+        /(\d+(?:\s+\d+\/\d+|\.\d+)?|\d+\/\d+)\s*(?:teaspoons?|tsps?|t)\b/gi,
+      convert: (amt) => `${Math.round(amt * 5)} ml`,
+    },
+
+    // Fluid ounces to ml (1 fl oz = 30ml)
+    {
+      pattern:
+        /(\d+(?:\s+\d+\/\d+|\.\d+)?|\d+\/\d+)\s*(?:fluid\s*ounces?|fl\.?\s*oz\.?)/gi,
+      convert: (amt) => `${Math.round(amt * 30)} ml`,
+    },
+
+    // Ounces to grams (1 oz = 28g)
+    {
+      pattern:
+        /(\d+(?:\s+\d+\/\d+|\.\d+)?|\d+\/\d+)\s*(?:ounces?|oz\.?)(?!\s*fluid)/gi,
+      convert: (amt) => `${Math.round(amt * 28)} g`,
+    },
+
+    // Pounds to grams (1 lb = 454g)
+    {
+      pattern: /(\d+(?:\s+\d+\/\d+|\.\d+)?|\d+\/\d+)\s*(?:pounds?|lbs?\.?)/gi,
+      convert: (amt) => `${Math.round(amt * 454)} g`,
+    },
+
+    // Fahrenheit to Celsius
+    {
+      pattern: /(\d+)\s*°?F\b/gi,
+      convert: (amt) => `${Math.round(((amt - 32) * 5) / 9)}°C`,
+    },
+  ];
+
+  conversions.forEach(({ pattern, convert }) => {
+    converted = converted.replace(pattern, (match, amount) => {
+      const num = parseAmount(amount);
+      return convert(num);
+    });
+  });
+
+  return converted;
 }
 
 /**

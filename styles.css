@@ -11,6 +11,11 @@ body {
   font-size: 14px;
 }
 
+button {
+  font-family: inherit;
+  margin-left: 8px;
+}
+
 #popupRoot {
   max-height: 600px;
   overflow-y: scroll; /* always reserve scrollbar so it’s visible */
