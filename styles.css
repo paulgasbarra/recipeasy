@@ -58,6 +58,27 @@ h1 {
   margin: 0;
 }
 
+#recipeAuthors {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+#recipeSite {
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+#recipeSite a {
+  color: #0066cc;
+  text-decoration: none;
+}
+
+#recipeSite a:hover {
+  text-decoration: underline;
+}
+
 #recipeImage {
   max-width: 100%;
   height: auto;

@@ -9,6 +9,8 @@ let currentUnitSystem = "US"; // "US" or "Metric"
 async function init() {
   const statusEl = document.getElementById("status");
   const titleEl = document.getElementById("recipeTitle");
+  const authorsEl = document.getElementById("recipeAuthors");
+  const siteEl = document.getElementById("recipeSite");
   const ingredientsList = document.getElementById("ingredientsList");
   const instructionsList = document.getElementById("instructionsList");
   const imageEl = document.getElementById("recipeImage");
@@ -39,7 +41,15 @@ async function init() {
       return;
     }
 
-    const { name, ingredients, instructions, imageUrl } = data;
+    const {
+      name,
+      ingredients,
+      instructions,
+      imageUrl,
+      author,
+      publisher,
+      siteUrl,
+    } = data;
 
     // Store original ingredients
     originalIngredients = [...ingredients];
@@ -49,6 +59,29 @@ async function init() {
     statusEl.textContent = "";
     if (name) {
       titleEl.textContent = name;
+    }
+
+    // Render author
+    if (author) {
+      authorsEl.textContent = `By ${author}`;
+      authorsEl.style.display = "block";
+    } else {
+      authorsEl.style.display = "none";
+    }
+
+    // Render site/publisher link
+    if (publisher && siteUrl) {
+      siteEl.innerHTML = `<a href="${escapeHtml(
+        siteUrl
+      )}" target="_blank">${escapeHtml(publisher)}</a>`;
+      siteEl.style.display = "block";
+    } else if (siteUrl) {
+      siteEl.innerHTML = `<a href="${escapeHtml(
+        siteUrl
+      )}" target="_blank">View Original Recipe</a>`;
+      siteEl.style.display = "block";
+    } else {
+      siteEl.style.display = "none";
     }
 
     // Render image
@@ -78,6 +111,9 @@ async function init() {
         ingredients: getCurrentIngredients(),
         instructions,
         imageUrl,
+        author,
+        publisher,
+        siteUrl,
       });
     });
 
@@ -322,7 +358,60 @@ function extractRecipeFromJsonLd() {
 
       const imageUrl = getImageUrl(node.image);
 
-      return { name, ingredients, instructions, imageUrl };
+      // Extract author information
+      let author = "";
+      if (node.author) {
+        if (typeof node.author === "string") {
+          author = node.author;
+        } else if (typeof node.author === "object") {
+          author = node.author.name || "";
+        } else if (Array.isArray(node.author) && node.author.length > 0) {
+          const firstAuthor = node.author[0];
+          author =
+            typeof firstAuthor === "string"
+              ? firstAuthor
+              : firstAuthor.name || "";
+        }
+      }
+
+      // Extract site/publisher information and URL
+      let publisher = "";
+      let siteUrl = "";
+      if (node.publisher) {
+        if (typeof node.publisher === "string") {
+          publisher = node.publisher;
+        } else if (typeof node.publisher === "object") {
+          publisher = node.publisher.name || "";
+          siteUrl = node.publisher.url || "";
+        }
+      }
+
+      // If no siteUrl from publisher, try to get from mainEntityOfPage or url
+      if (!siteUrl) {
+        if (node.mainEntityOfPage) {
+          siteUrl =
+            typeof node.mainEntityOfPage === "string"
+              ? node.mainEntityOfPage
+              : node.mainEntityOfPage["@id"] || "";
+        } else if (node.url) {
+          siteUrl = node.url;
+        }
+      }
+
+      // If still no siteUrl, use current page URL
+      if (!siteUrl) {
+        siteUrl = window.location.href;
+      }
+
+      return {
+        name,
+        ingredients,
+        instructions,
+        imageUrl,
+        author,
+        publisher,
+        siteUrl,
+      };
     }
   }
 
@@ -332,7 +421,15 @@ function extractRecipeFromJsonLd() {
 /**
  * Opens a new window with a printable recipe layout and triggers print.
  */
-function openPrintWindow({ name, ingredients, instructions, imageUrl }) {
+function openPrintWindow({
+  name,
+  ingredients,
+  instructions,
+  imageUrl,
+  author,
+  publisher,
+  siteUrl,
+}) {
   const printWindow = window.open("", "_blank");
   if (!printWindow) return;
 
@@ -353,9 +450,23 @@ function openPrintWindow({ name, ingredients, instructions, imageUrl }) {
             margin: 24px;
             line-height: 1.4;
           }
+          
           h1 {
             font-size: 24px;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
+            margin-top: 0;
+          }
+          .recipe-meta {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+          }
+          .recipe-meta a {
+            color: #0066cc;
+            text-decoration: none;
+          }
+          .recipe-meta a:hover {
+            text-decoration: underline;
           }
           img {
             max-width: 200px;
@@ -376,6 +487,22 @@ function openPrintWindow({ name, ingredients, instructions, imageUrl }) {
       </head>
       <body>
         <h1>${escapeHtml(title)}</h1>
+        ${
+          author
+            ? `<div class="recipe-meta">By ${escapeHtml(author)}</div>`
+            : ""
+        }
+        ${
+          publisher && siteUrl
+            ? `<div class="recipe-meta">Source: <a href="${escapeHtml(
+                siteUrl
+              )}" target="_blank">${escapeHtml(publisher)}</a></div>`
+            : siteUrl
+            ? `<div class="recipe-meta">Source: <a href="${escapeHtml(
+                siteUrl
+              )}" target="_blank">View Original</a></div>`
+            : ""
+        }
         ${imageUrl ? `<img src="${imageUrl}" alt="">` : ""}
         <h2>Ingredients</h2>
         <ul>
